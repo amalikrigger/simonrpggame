@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Lucky Pixel Lounge: a cozy 8-bit casino RPG with a playable blackjack table." />
+    <meta name="theme-color" content="#140c1c" />
+
+    <title>Lucky Pixel Lounge</title>
+
+    <!-- Pixel font (optional — falls back to a monospace font when offline) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="style.css" />
+    <script src="audio.js" defer></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <main class="app">
+      <!-- Everything inside the frame is sized in "game pixels" so the canvas and UI scale together -->
+      <div id="game-frame" class="game-frame">
+        <canvas id="game-canvas" width="320" height="240">
+          A cozy pixel casino room. Your browser needs canvas support to play.
+        </canvas>
+
+        <!-- ===== HUD ===== -->
+        <div class="hud">
+          <div class="hud-tokens" id="hud-tokens">
+            <span class="coin" aria-hidden="true"></span>
+            <span>Tokens</span>
+            <strong id="hud-balance">500</strong>
+          </div>
+          <button class="icon-btn" type="button" data-open-settings aria-haspopup="dialog" aria-label="Sound settings" title="Sound settings (M to mute)">
+            <svg viewBox="0 0 10 9" shape-rendering="crispEdges" aria-hidden="true">
+              <path fill="currentColor" d="M0 3h3v3H0zM3 2h1v5H3zM4 1h1v7H4zM5 0h1v9H5z" />
+              <path class="waves" fill="currentColor" d="M7 3h1v3H7zM9 2h1v5H9z" />
+              <path class="mute-x" fill="currentColor" d="M7 3h1v1H7zM9 3h1v1H9zM8 4h1v1H8zM7 5h1v1H7zM9 5h1v1H9z" />
+            </svg>
+          </button>
+        </div>
+
+        <div id="interact-prompt" class="interact-prompt" role="status" aria-live="polite">
+          Press <kbd>E</kbd> or <kbd>Space</kbd> to play
+        </div>
+
+        <!-- ===== Blackjack overlay ===== -->
+        <section
+          id="blackjack"
+          class="overlay"
+          data-phase="betting"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bj-title"
+          aria-hidden="true"
+          inert
+        >
+          <div class="bj-panel" tabindex="-1">
+            <header class="bj-header">
+              <h1 id="bj-title">Blackjack</h1>
+              <div class="bj-header-right">
+                <button class="icon-btn" type="button" data-open-settings aria-haspopup="dialog" aria-label="Sound settings" title="Sound settings (M to mute)">
+                  <svg viewBox="0 0 10 9" shape-rendering="crispEdges" aria-hidden="true">
+                    <path fill="currentColor" d="M0 3h3v3H0zM3 2h1v5H3zM4 1h1v7H4zM5 0h1v9H5z" />
+                    <path class="waves" fill="currentColor" d="M7 3h1v3H7zM9 2h1v5H9z" />
+                    <path class="mute-x" fill="currentColor" d="M7 3h1v1H7zM9 3h1v1H9zM8 4h1v1H8zM7 5h1v1H7zM9 5h1v1H9z" />
+                  </svg>
+                </button>
+                <div class="bj-balance">
+                  <span class="coin" aria-hidden="true"></span>
+                  <strong id="bj-balance">500</strong>
+                </div>
+              </div>
+            </header>
+
+            <div class="bj-table">
+              <div class="bj-hand">
+                <div class="bj-hand-label">
+                  Dealer <span id="dealer-score" class="score">--</span>
+                </div>
+                <div id="dealer-cards" class="cards" aria-label="Dealer cards"></div>
+              </div>
+
+              <p id="bj-message" class="bj-message" aria-live="polite">Place your bet!</p>
+
+              <div class="bj-hand">
+                <div class="bj-hand-label">
+                  You <span id="player-score" class="score">--</span>
+                  <span class="bet-tag">Bet <strong id="bj-bet">0</strong></span>
+                </div>
+                <div id="player-cards" class="cards" aria-label="Your cards"></div>
+              </div>
+            </div>
+
+            <footer class="bj-controls">
+              <!-- Phase: betting -->
+              <div class="controls-group" data-for="betting">
+                <div class="chips" role="group" aria-label="Bet amount">
+                  <button class="chip" type="button" data-bet="10" aria-pressed="false" aria-label="Bet 10 tokens">10</button>
+                  <button class="chip" type="button" data-bet="20" aria-pressed="false" aria-label="Bet 20 tokens">20</button>
+                  <button class="chip" type="button" data-bet="50" aria-pressed="false" aria-label="Bet 50 tokens">50</button>
+                  <button class="chip" type="button" data-bet="100" aria-pressed="false" aria-label="Bet 100 tokens">100</button>
+                </div>
+                <div class="actions">
+                  <button id="btn-deal" class="btn btn-primary" type="button" disabled>Deal <span class="key">↵</span></button>
+                  <button id="btn-rebuy" class="btn btn-primary" type="button" hidden>Rebuy</button>
+                  <button class="btn" type="button" data-action="leave">Leave <span class="key">Esc</span></button>
+                </div>
+              </div>
+
+              <!-- Phase: player turn -->
+              <div class="controls-group" data-for="player">
+                <button id="btn-hit" class="btn btn-primary" type="button">Hit <span class="key">H</span></button>
+                <button id="btn-stand" class="btn" type="button">Stand <span class="key">S</span></button>
+              </div>
+
+              <!-- Phase: dealer turn -->
+              <div class="controls-group" data-for="dealer">
+                <p class="waiting">Dealer is playing...</p>
+              </div>
+
+              <!-- Phase: round result -->
+              <div class="controls-group" data-for="result">
+                <button id="btn-new" class="btn btn-primary" type="button">New Hand <span class="key">↵</span></button>
+                <button class="btn" type="button" data-action="leave">Leave <span class="key">Esc</span></button>
+              </div>
+            </footer>
+          </div>
+        </section>
+
+        <!-- ===== Sound settings ===== -->
+        <section
+          id="settings"
+          class="overlay overlay--settings"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-title"
+          aria-hidden="true"
+          inert
+        >
+          <div class="settings-panel" tabindex="-1">
+            <header class="settings-header">
+              <h2 id="settings-title">Sound</h2>
+            </header>
+
+            <div class="settings-rows">
+              <div class="setting-row" data-channel="song">
+                <label class="setting-label" for="song-select">Song</label>
+                <select id="song-select" class="song-select"></select>
+                <output class="setting-value" id="song-value">--</output>
+                <button class="mute-toggle" type="button" id="btn-song-cycle" aria-label="Cycle equipped area song">Next</button>
+              </div>
+              <div class="setting-row" data-channel="master">
+                <label class="setting-label" for="vol-master">Master</label>
+                <input id="vol-master" type="range" min="0" max="100" step="5" />
+                <output class="setting-value" for="vol-master">80</output>
+                <button class="mute-toggle" type="button" aria-pressed="false" aria-label="Mute master volume">Mute</button>
+              </div>
+              <div class="setting-row" data-channel="music">
+                <label class="setting-label" for="vol-music">Music</label>
+                <input id="vol-music" type="range" min="0" max="100" step="5" />
+                <output class="setting-value" for="vol-music">50</output>
+                <button class="mute-toggle" type="button" aria-pressed="false" aria-label="Mute music">Mute</button>
+              </div>
+              <div class="setting-row" data-channel="sfx">
+                <label class="setting-label" for="vol-sfx">Effects</label>
+                <input id="vol-sfx" type="range" min="0" max="100" step="5" />
+                <output class="setting-value" for="vol-sfx">80</output>
+                <button class="mute-toggle" type="button" aria-pressed="false" aria-label="Mute sound effects">Mute</button>
+              </div>
+              <div class="setting-row" data-channel="voice">
+                <label class="setting-label" for="vol-voice">Dealer</label>
+                <input id="vol-voice" type="range" min="0" max="100" step="5" />
+                <output class="setting-value" for="vol-voice">100</output>
+                <button class="mute-toggle" type="button" aria-pressed="false" aria-label="Mute dealer voice">Mute</button>
+              </div>
+            </div>
+
+            <footer class="settings-footer">
+              <p id="audio-note" class="settings-note" hidden>Dealer voice is not supported in this browser.</p>
+              <button id="btn-settings-close" class="btn btn-primary" type="button">Done <span class="key">Esc</span></button>
+            </footer>
+          </div>
+        </section>
+
+        <!-- ===== Cosmetics shop overlay ===== -->
+        <section
+          id="cosmetics"
+          class="overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cos-title"
+          aria-hidden="true"
+          inert
+        >
+          <div class="cos-panel" tabindex="-1">
+            <header class="bj-header">
+              <h2 id="cos-title">Cosmetics Shop</h2>
+              <div class="bj-balance">
+                <span class="coin" aria-hidden="true"></span>
+                <strong id="cos-balance">500</strong>
+              </div>
+            </header>
+            <p id="cos-message" class="bj-message" aria-live="polite">Buy and equip styles and area songs.</p>
+            <div class="cos-grid" id="cos-grid"></div>
+            <footer class="settings-footer">
+              <button id="btn-cos-close" class="btn btn-primary" type="button">Leave Shop <span class="key">Esc</span></button>
+            </footer>
+          </div>
+        </section>
+      </div>
+
+      <p id="help" class="help">
+        <kbd>WASD</kbd>/<kbd>Arrows</kbd> move &middot; <kbd>E</kbd>/<kbd>Space</kbd> talk to dealer<br />
+        Table: <kbd>1</kbd>-<kbd>4</kbd> bet &middot; <kbd>Enter</kbd> deal &middot; <kbd>H</kbd> hit &middot;
+        <kbd>S</kbd> stand &middot; <kbd>Esc</kbd> leave &middot; <kbd>M</kbd> mute sound
+      </p>
+    </main>
+  </body>
+</html>
