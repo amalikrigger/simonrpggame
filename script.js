@@ -520,7 +520,7 @@
 
       // Depth-sorted drawables (sortY = bottom edge on screen)
       drawables = [
-        { get sortY() { return player.y + player.h; }, draw: drawPlayer },
+        { get sortY() { return player.y + player.h; }, draw: () => drawPlayer() },
         { sortY: TABLE.y + TABLE.h, draw: drawDealerStation },
         ...PROPS.map((prop) => ({
           sortY: prop.y + prop.h,
