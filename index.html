@@ -13,9 +13,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="style.css" />
-    <script src="audio.js" defer></script>
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="style.css?v=fare10k" />
+    <script src="audio.js?v=fare10k" defer></script>
+    <script src="script.js?v=fare10k" defer></script>
   </head>
   <body>
     <main class="app">
@@ -30,7 +30,7 @@
           <div class="hud-tokens" id="hud-tokens">
             <span class="coin" aria-hidden="true"></span>
             <span>Tokens</span>
-            <strong id="hud-balance">500</strong>
+            <strong id="hud-balance">15000</strong>
           </div>
           <button class="icon-btn" type="button" data-open-settings aria-haspopup="dialog" aria-label="Sound settings" title="Sound settings (M to mute)">
             <svg viewBox="0 0 10 9" shape-rendering="crispEdges" aria-hidden="true">
@@ -69,7 +69,7 @@
                 </button>
                 <div class="bj-balance">
                   <span class="coin" aria-hidden="true"></span>
-                  <strong id="bj-balance">500</strong>
+                  <strong id="bj-balance">15000</strong>
                 </div>
               </div>
             </header>
@@ -209,12 +209,219 @@
             </footer>
           </div>
         </section>
+
+        <!-- ===== Black Market overlay ===== -->
+        <section
+          id="blackmarket"
+          class="overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bm-title"
+          aria-hidden="true"
+          inert
+        >
+          <div class="cos-panel bm-panel" tabindex="-1">
+            <header class="bj-header">
+              <h2 id="bm-title">Black Market</h2>
+              <div class="bj-balance">
+                <span class="coin" aria-hidden="true"></span>
+                <strong id="bm-balance">500</strong>
+              </div>
+            </header>
+            <p id="bm-message" class="bj-message" aria-live="polite"></p>
+            <div class="cos-grid" id="bm-grid" hidden></div>
+            <footer class="settings-footer">
+              <button id="btn-bm-open" class="btn" type="button">Open Shop</button>
+              <button id="btn-bm-close" class="btn btn-primary" type="button">Leave <span class="key">Esc</span></button>
+            </footer>
+          </div>
+        </section>
+
+        <!-- ===== Bank overlay ===== -->
+        <section
+          id="bank"
+          class="overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bank-title"
+          aria-hidden="true"
+          inert
+        >
+          <div class="cos-panel bank-panel" tabindex="-1">
+            <header class="bj-header">
+              <h2 id="bank-title">The Bank</h2>
+              <div class="bj-balance">
+                <span class="coin" aria-hidden="true"></span>
+                <strong id="bank-balance">15000</strong>
+              </div>
+            </header>
+            <p id="bank-message" class="bj-message" aria-live="polite"></p>
+            <p id="bank-debt" class="bank-debt"></p>
+            <footer class="settings-footer">
+              <button id="btn-bank-borrow" class="btn" type="button">Take Loan</button>
+              <button id="btn-bank-repay" class="btn" type="button">Repay</button>
+              <button id="btn-bank-close" class="btn btn-primary" type="button">Leave <span class="key">Esc</span></button>
+            </footer>
+          </div>
+        </section>
+
+        <!-- ===== Loan shark (bank back room) overlay ===== -->
+        <section
+          id="shark"
+          class="overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="shark-title"
+          aria-hidden="true"
+          inert
+        >
+          <div class="cos-panel shark-panel" tabindex="-1">
+            <header class="bj-header">
+              <h2 id="shark-title">The Back Room</h2>
+              <div class="bj-balance">
+                <span class="coin" aria-hidden="true"></span>
+                <strong id="shark-balance">15000</strong>
+              </div>
+            </header>
+            <p id="shark-message" class="bj-message" aria-live="polite"></p>
+            <p id="shark-debt" class="bank-debt"></p>
+            <footer class="settings-footer">
+              <button id="btn-shark-borrow" class="btn" type="button">Take Loan</button>
+              <button id="btn-shark-repay" class="btn" type="button">Repay</button>
+              <button id="btn-shark-close" class="btn btn-primary" type="button">Leave <span class="key">Esc</span></button>
+            </footer>
+          </div>
+        </section>
+
+        <!-- ===== Town 3: Five card draw poker ===== -->
+        <section id="poker" class="overlay" data-phase="betting" role="dialog" aria-modal="true" aria-labelledby="pk-title" aria-hidden="true" inert>
+          <div class="bj-panel pk-panel" tabindex="-1">
+            <header class="bj-header">
+              <h1 id="pk-title">Draw Poker</h1>
+              <div class="bj-balance">
+                <span class="coin" aria-hidden="true"></span>
+                <strong id="pk-balance">15000</strong>
+              </div>
+            </header>
+
+            <div class="bj-table">
+              <ol id="pk-paytable" class="pk-paytable" aria-label="Paytable"></ol>
+              <div class="bj-hand">
+                <div class="bj-hand-label">
+                  Your hand
+                  <span class="bet-tag">Bet <strong id="pk-bet">0</strong></span>
+                </div>
+                <div id="pk-cards" class="cards pk-cards" aria-label="Your cards"></div>
+              </div>
+            </div>
+
+            <p id="pk-message" class="bj-message" aria-live="polite">Jacks or Better. Place your bet!</p>
+
+            <footer class="bj-controls">
+              <div class="controls-group" data-for="betting">
+                <div class="chips" role="group" aria-label="Bet amount">
+                  <button class="chip" type="button" data-bet="10" aria-pressed="false" aria-label="Bet 10 tokens">10</button>
+                  <button class="chip" type="button" data-bet="20" aria-pressed="false" aria-label="Bet 20 tokens">20</button>
+                  <button class="chip" type="button" data-bet="50" aria-pressed="false" aria-label="Bet 50 tokens">50</button>
+                  <button class="chip" type="button" data-bet="100" aria-pressed="false" aria-label="Bet 100 tokens">100</button>
+                </div>
+                <div class="actions">
+                  <button id="btn-pk-deal" class="btn btn-primary" type="button" disabled>Deal <span class="key">↵</span></button>
+                  <button class="btn" type="button" data-action="leave">Leave <span class="key">Esc</span></button>
+                </div>
+              </div>
+              <div class="controls-group" data-for="player">
+                <p class="pk-hint">Click cards (1-5) to hold</p>
+                <button id="btn-pk-draw" class="btn btn-primary" type="button">Draw <span class="key">↵</span></button>
+              </div>
+              <div class="controls-group" data-for="result">
+                <button id="btn-pk-new" class="btn btn-primary" type="button">New Hand <span class="key">↵</span></button>
+                <button class="btn" type="button" data-action="leave">Leave <span class="key">Esc</span></button>
+              </div>
+            </footer>
+          </div>
+        </section>
+
+        <!-- ===== Town 3: Roulette ===== -->
+        <section id="roulette" class="overlay" data-phase="betting" role="dialog" aria-modal="true" aria-labelledby="rl-title" aria-hidden="true" inert>
+          <div class="bj-panel rl-panel" tabindex="-1">
+            <header class="bj-header">
+              <h1 id="rl-title">Roulette</h1>
+              <div class="bj-balance">
+                <span class="coin" aria-hidden="true"></span>
+                <strong id="rl-balance">15000</strong>
+              </div>
+            </header>
+
+            <div class="rl-main">
+              <canvas id="rl-wheel" class="rl-wheel" width="96" height="96" aria-hidden="true"></canvas>
+              <div id="rl-board" class="rl-board" role="group" aria-label="Betting layout"></div>
+            </div>
+
+            <p id="rl-message" class="bj-message" aria-live="polite">Pick a spot on the layout, choose a chip and spin!</p>
+
+            <footer class="bj-controls">
+              <div class="controls-group" data-for="betting">
+                <div class="chips" role="group" aria-label="Bet amount">
+                  <button class="chip" type="button" data-bet="10" aria-pressed="false" aria-label="Bet 10 tokens">10</button>
+                  <button class="chip" type="button" data-bet="20" aria-pressed="false" aria-label="Bet 20 tokens">20</button>
+                  <button class="chip" type="button" data-bet="50" aria-pressed="false" aria-label="Bet 50 tokens">50</button>
+                  <button class="chip" type="button" data-bet="100" aria-pressed="false" aria-label="Bet 100 tokens">100</button>
+                </div>
+                <div class="actions">
+                  <button id="btn-rl-spin" class="btn btn-primary" type="button" disabled>Spin <span class="key">↵</span></button>
+                  <button class="btn" type="button" data-action="leave">Leave <span class="key">Esc</span></button>
+                </div>
+              </div>
+              <div class="controls-group" data-for="dealer">
+                <p class="waiting">No more bets...</p>
+              </div>
+            </footer>
+          </div>
+        </section>
+
+        <!-- ===== Town 3: Plinko ===== -->
+        <section id="plinko" class="overlay" data-phase="betting" role="dialog" aria-modal="true" aria-labelledby="pl-title" aria-hidden="true" inert>
+          <div class="bj-panel pl-panel" tabindex="-1">
+            <header class="bj-header">
+              <h1 id="pl-title">Plinko</h1>
+              <div class="bj-header-right">
+                <span class="bet-tag">Bet <strong id="pl-bet">0</strong></span>
+                <div class="bj-balance">
+                  <span class="coin" aria-hidden="true"></span>
+                  <strong id="pl-balance">15000</strong>
+                </div>
+              </div>
+            </header>
+
+            <canvas id="pl-board" class="pl-board" width="160" height="124" aria-hidden="true"></canvas>
+
+            <p id="pl-message" class="bj-message" aria-live="polite">Pick a chip and drop a ball!</p>
+
+            <footer class="bj-controls">
+              <div class="controls-group" data-for="betting">
+                <div class="chips" role="group" aria-label="Bet amount">
+                  <button class="chip" type="button" data-bet="10" aria-pressed="false" aria-label="Bet 10 tokens">10</button>
+                  <button class="chip" type="button" data-bet="20" aria-pressed="false" aria-label="Bet 20 tokens">20</button>
+                  <button class="chip" type="button" data-bet="50" aria-pressed="false" aria-label="Bet 50 tokens">50</button>
+                  <button class="chip" type="button" data-bet="100" aria-pressed="false" aria-label="Bet 100 tokens">100</button>
+                </div>
+                <div class="actions">
+                  <button id="btn-pl-drop" class="btn btn-primary" type="button" disabled>Drop <span class="key">↵</span></button>
+                  <button class="btn" type="button" data-action="leave">Leave <span class="key">Esc</span></button>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </section>
       </div>
 
       <p id="help" class="help">
         <kbd>WASD</kbd>/<kbd>Arrows</kbd> move &middot; <kbd>E</kbd>/<kbd>Space</kbd> talk to dealer<br />
         Table: <kbd>1</kbd>-<kbd>4</kbd> bet &middot; <kbd>Enter</kbd> deal &middot; <kbd>H</kbd> hit &middot;
-        <kbd>S</kbd> stand &middot; <kbd>Esc</kbd> leave &middot; <kbd>M</kbd> mute sound
+        <kbd>S</kbd> stand &middot; <kbd>Esc</kbd> leave &middot; <kbd>M</kbd> mute sound<br />
+        Slots: <kbd>Space</kbd>/<kbd>Enter</kbd> or click the lever to spin &middot; <kbd>Esc</kbd> leave<br />
+        Town 3 lounge: poker (<kbd>1</kbd>-<kbd>5</kbd> hold), roulette and plinko &middot; <kbd>Enter</kbd> deal / spin / drop
       </p>
     </main>
   </body>

@@ -262,7 +262,9 @@
     amp.gain.linearRampToValueAtTime(gain, t + attack);
     amp.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     src.connect(filter).connect(amp).connect(out ?? Core.nodes.sfx);
-    const offset = Math.random() * (Core.noise.duration - dur - 0.1);
+    // Bursts longer than the noise buffer loop it instead of using a negative offset (which throws).
+    src.loop = dur + 0.1 > Core.noise.duration;
+    const offset = src.loop ? 0 : Math.random() * (Core.noise.duration - dur - 0.1);
     src.start(t, offset, dur + 0.03);
   }
 
@@ -401,6 +403,88 @@
       tone(t + 0.14, { freq: 523, dur: 0.2, type: 'triangle', gain: 0.08 });
     },
 
+    /* ----- Train ----- */
+    trainWhistle(t) {
+      for (const [start, dur] of [[0, 0.32], [0.4, 0.6]]) {
+        tone(t + start, { freq: 587, dur, type: 'triangle', gain: 0.07, attack: 0.03 });
+        tone(t + start, { freq: 740, dur, type: 'triangle', gain: 0.05, attack: 0.03 });
+        noise(t + start, { dur, type: 'bandpass', freq: 1800, q: 3, gain: 0.04, attack: 0.03 });
+      }
+      for (let i = 0; i < 4; i++) noise(t + 0.9 + i * 0.22, { dur: 0.08, type: 'lowpass', freq: 500, gain: 0.18, attack: 0.004 });
+    },
+    trainTunnel(t) {
+      noise(t, { dur: 0.9, type: 'lowpass', freq: 900, freqEnd: 180, gain: 0.3, attack: 0.05 });
+      tone(t, { freq: 90, freqEnd: 55, dur: 0.8, type: 'sine', gain: 0.12, attack: 0.05 });
+    },
+    trainBrake(t) {
+      noise(t, { dur: 0.55, type: 'bandpass', freq: 3800, freqEnd: 2600, q: 8, gain: 0.08, attack: 0.02 });
+      noise(t + 0.45, { dur: 0.5, type: 'highpass', freq: 1500, gain: 0.07, attack: 0.03 });
+      cardTap(t + 0.5, 0.9);
+    },
+    doorCreak(t) {
+      noise(t, { dur: 0.9, type: 'bandpass', freq: 380, freqEnd: 760, q: 14, gain: 0.25, attack: 0.08 });
+      noise(t + 0.25, { dur: 0.6, type: 'bandpass', freq: 620, freqEnd: 340, q: 16, gain: 0.18, attack: 0.05 });
+      tone(t + 0.85, { freq: 90, freqEnd: 50, dur: 0.18, type: 'sine', gain: 0.25, attack: 0.003 });
+    },
+    tunnelCollapse(t) {
+      noise(t, { dur: 2.2, type: 'lowpass', freq: 600, freqEnd: 120, gain: 0.4, attack: 0.25 });
+      tone(t, { freq: 60, freqEnd: 32, dur: 2.0, type: 'sine', gain: 0.3, attack: 0.2 });
+      for (let i = 0; i < 9; i++) {
+        const at = t + 0.3 + i * 0.16 + rand(0, 0.08);
+        noise(at, { dur: 0.14, type: 'lowpass', freq: rand(300, 700), gain: 0.35, attack: 0.002 });
+        tone(at, { freq: rand(90, 140), freqEnd: 45, dur: 0.16, type: 'sine', gain: 0.22, attack: 0.002 });
+      }
+      noise(t + 1.6, { dur: 0.9, type: 'lowpass', freq: 400, freqEnd: 90, gain: 0.45, attack: 0.005 });
+      tone(t + 1.6, { freq: 70, freqEnd: 30, dur: 0.6, type: 'sine', gain: 0.4, attack: 0.003 });
+      for (let i = 0; i < 6; i++) noise(t + 1.9 + i * 0.12 + rand(0, 0.06), { dur: 0.06, type: 'bandpass', freq: rand(1200, 2400), q: 1.5, gain: 0.06, attack: 0.001 });
+    },
+
+    /* ----- Opening cutscene ----- */
+    carHorn(t) {
+      for (const [start, dur] of [[0, 0.22], [0.3, 0.6]]) {
+        tone(t + start, { freq: 392, dur, type: 'square', gain: 0.045, attack: 0.01 });
+        tone(t + start, { freq: 494, dur, type: 'square', gain: 0.035, attack: 0.01 });
+      }
+    },
+    carCrash(t) {
+      noise(t, { dur: 1.4, type: 'lowpass', freq: 2600, freqEnd: 180, gain: 0.55, attack: 0.002 });
+      tone(t, { freq: 90, freqEnd: 28, dur: 0.6, type: 'sine', gain: 0.45, attack: 0.002 });
+      for (let i = 0; i < 5; i++) tone(t + 0.02 + i * 0.05, { freq: rand(180, 420), freqEnd: rand(80, 160), dur: 0.12, type: 'square', gain: 0.05, attack: 0.001 });
+      for (let i = 0; i < 14; i++) noise(t + 0.08 + rand(0, 0.9), { dur: 0.05, type: 'bandpass', freq: rand(3000, 7000), q: 4, gain: 0.08, attack: 0.001 });
+    },
+    stamp(t) {
+      noise(t, { dur: 0.12, type: 'lowpass', freq: 700, gain: 0.4, attack: 0.001 });
+      tone(t, { freq: 130, freqEnd: 50, dur: 0.22, type: 'sine', gain: 0.35, attack: 0.002 });
+    },
+    heartBeep(t) {
+      tone(t, { freq: 1046, dur: 0.12, type: 'sine', gain: 0.05, attack: 0.004 });
+    },
+
+    /* ----- Slot machine ----- */
+    slotLever(t) {
+      for (let i = 0; i < 5; i++) noise(t + i * 0.024, { dur: 0.02, type: 'bandpass', freq: 2400 - i * 250, q: 2, gain: 0.1, attack: 0.001 });
+      tone(t + 0.13, { freq: 150, freqEnd: 65, dur: 0.14, type: 'sine', gain: 0.3, attack: 0.002 });
+      noise(t + 0.13, { dur: 0.07, type: 'lowpass', freq: 700, gain: 0.28, attack: 0.001 });
+      noise(t + 0.16, { dur: 0.35, type: 'bandpass', freq: 500, freqEnd: 1400, q: 0.8, gain: 0.06, attack: 0.05 });
+    },
+    reelTick(t) {
+      noise(t, { dur: 0.016, type: 'bandpass', freq: rand(2600, 3300), q: 2.5, gain: 0.05, attack: 0.001 });
+    },
+    reelStop(t) {
+      tone(t, { freq: 200, freqEnd: 80, dur: 0.12, type: 'sine', gain: 0.32, attack: 0.001 });
+      noise(t, { dur: 0.05, type: 'lowpass', freq: 1500, gain: 0.3, attack: 0.001 });
+      clink(t + 0.01, { pitch: 0.55, gain: 0.45 });
+    },
+    slotJackpot(t) {
+      const run = [523, 659, 784, 1047, 784, 1047, 1319, 1568, 2093];
+      run.forEach((freq, i) => {
+        tone(t + i * 0.08, { freq, dur: 0.3, type: 'square', gain: 0.045 });
+        tone(t + i * 0.08, { freq: freq / 2, dur: 0.3, type: 'triangle', gain: 0.07 });
+      });
+      chipStack(t + 0.3, 16, 0.045);
+      chipStack(t + 1.05, 12, 0.05, 0.8);
+    },
+
     /* ----- Distant ambience (quiet, low-passed) ----- */
     distantSlot(t) {
       const far = Core.ctx.createBiquadFilter();
@@ -436,7 +520,12 @@
         return;
       }
       if (Settings.effective('sfx') <= 0) return;
-      sound(Core.now() + (opts.delay ?? 0) + 0.01);
+      try {
+        sound(Core.now() + (opts.delay ?? 0) + 0.01);
+      } catch (err) {
+        // A broken sound must never take the game loop down with it.
+        console.warn(`[audio] sfx "${name}" failed`, err);
+      }
     },
   };
 
@@ -721,6 +810,7 @@
     push: ['Push. Your bet is returned.', 'A push. Nobody wins.', 'Tie. You keep your bet.'],
     broke: ['Out of tokens! Let me spot you a stack.', 'Tapped out? The house can help.'],
     rebuy: ['Here is a fresh stack. Do not spend it all at once.', 'On the house. Good luck.'],
+    brokeNoCredit: ['Out of tokens. No credit at this table.', 'Tapped out? The bank is down the street.'],
     goodbye: ['Thanks for playing. Come back soon.', 'Good luck out there.', 'Take care. The table will be here.'],
     preview: ['Place your bets.'],
   });
