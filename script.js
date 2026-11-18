@@ -29,8 +29,8 @@
     HEIGHT: 240,
     PLAYER_SPEED: 72, // logical pixels per second
     INTERACT_RADIUS: 48, // center-to-center distance to talk to the dealer
-    STARTING_BALANCE: 15000,
-    REBUY_AMOUNT: 500,
+    STARTING_BALANCE: 500,
+    REBUY_AMOUNT: 300,
     BET_OPTIONS: Object.freeze([10, 20, 50, 100]),
     NUM_DECKS: 4,
     RESHUFFLE_THRESHOLD: 20, // reshuffle before a hand if fewer cards remain
@@ -54,7 +54,7 @@
   };
 
   // Fare by destination town; only charged the first time a town is unlocked.
-  const TRAIN_FARES = Object.freeze({ 2: 1500, 3: 10000 });
+  const TRAIN_FARES = Object.freeze({ 2: 800, 3: 4000 });
   const MAX_TOWNS = 3;
   const GRAND_CASINO_TOWN = 3; // from this town on, the lounge also has poker, roulette and plinko
   const TRAIN_STOP_OFFSET = 31; // engine and car sit this far either side of a platform's centre
