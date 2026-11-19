@@ -326,6 +326,19 @@
     title: 14.0, prompt: 15.0, autoRestart: 24.0,
   });
 
+  // Finale cutscene after taking the train out of Town 3.
+  const ENDING = Object.freeze({
+    walkStart: 0.5,
+    walkEnd: 3.8,
+    enter: 4.4,
+    elevatorStart: 5.2,
+    elevatorEnd: 7.4,
+    topFloorStart: 7.4,
+    seatStart: 10.9,
+    title: 13.2,
+    prompt: 14.2,
+  });
+
   // Opening cutscene: scene start times (seconds after the player presses start).
   const INTRO = Object.freeze({
     site: 0, drive: 9, crash: 14.6, hospital: 18, fired: 27.5, evict: 36, street: 45, title: 56, end: 60,
@@ -870,7 +883,8 @@
     let townBackground;
     let townBackgroundBlackMarket;
     let alleyBackground;
-    let introScenes;
+    let endingStreetBackground;
+    let endingPenthouseBackground;
     let cosmeticsBackground;
     let drawables;
     let grandDrawables;
@@ -912,13 +926,8 @@
       interiorBackgrounds.butcherBank = renderBankInterior();
       interiorBackgrounds.backroom = renderBackroomInterior();
       alleyBackground = renderAlleyBackground();
-      introScenes = {
-        site: renderIntroSite(),
-        hospital: renderIntroHospital(),
-        office: renderIntroOffice(),
-        apartment: renderIntroApartment(),
-        street: renderIntroStreet(),
-      };
+      endingStreetBackground = renderEndingStreetBackground();
+      endingPenthouseBackground = renderEndingPenthouseBackground();
       cosmeticsBackground = renderCosmeticsBackground();
       for (const def of STORE_DEFS) {
         if (def.id === 'casino' || def.id === 'cosmetics') continue;
@@ -2490,6 +2499,86 @@
       return canvas;
     }
 
+    function renderEndingStreetBackground() {
+      const { canvas, g } = createLayer(CONFIG.WIDTH, CONFIG.HEIGHT);
+      fillRect(g, 0, 0, CONFIG.WIDTH, CONFIG.HEIGHT, '#0b1222');
+      for (let i = 0; i < 24; i++) fillRect(g, (i * 51) % CONFIG.WIDTH, 6 + ((i * 19) % 38), 1, 1, '#a4b9d8');
+
+      // Distant skyline.
+      for (let i = 0; i < 17; i++) {
+        const w = 10 + ((i * 7) % 24);
+        const h = 24 + ((i * 11) % 52);
+        const x = (i * 21) % CONFIG.WIDTH;
+        fillRect(g, x, 136 - h, w, h, i % 2 ? '#172238' : '#1b2a44');
+        for (let wy = 136 - h + 4; wy < 136 - 4; wy += 7) {
+          for (let wx = x + 2; wx < x + w - 2; wx += 5) {
+            if ((wx + wy + i) % 3 === 0) fillRect(g, wx, wy, 2, 2, '#c9b16a');
+          }
+        }
+      }
+
+      // Street and rich building facade.
+      fillRect(g, 0, 136, CONFIG.WIDTH, 104, '#1f2330');
+      fillRect(g, 0, 178, CONFIG.WIDTH, 2, '#2f3748');
+      for (let x = 10; x < CONFIG.WIDTH; x += 28) fillRect(g, x, 179, 10, 1, '#5a5f70');
+
+      const bx = 184;
+      fillRect(g, bx - 26, 42, 144, 94, PAL.ink);
+      fillRect(g, bx - 24, 44, 140, 90, '#3a3f52');
+      fillRect(g, bx - 30, 38, 152, 8, '#8a6b36');
+      fillRect(g, bx - 18, 52, 128, 10, '#5a637a');
+      for (let col = 0; col < 6; col++) {
+        const cx = bx - 10 + col * 20;
+        fillRect(g, cx, 62, 6, 72, '#2b3042');
+        fillRect(g, cx + 1, 62, 4, 72, '#49526a');
+      }
+      for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 5; col++) {
+          fillRect(g, bx - 2 + col * 24, 68 + row * 14, 9, 6, '#9fc2e0');
+          fillRect(g, bx - 1 + col * 24, 69 + row * 14, 7, 4, '#d8edff');
+        }
+      }
+
+      // Entry door + stairs.
+      fillRect(g, 222, 100, 18, 34, PAL.ink);
+      fillRect(g, 223, 101, 16, 33, '#22151f');
+      fillRect(g, 224, 112, 14, 22, '#1f2739');
+      fillRect(g, 228, 116, 2, 2, PAL.gold);
+      for (let i = 0; i < 4; i++) fillRect(g, 210 - i * 5, 134 + i * 2, 44 + i * 10, 2, '#586176');
+
+      return canvas;
+    }
+
+    function renderEndingPenthouseBackground() {
+      const { canvas, g } = createLayer(CONFIG.WIDTH, CONFIG.HEIGHT);
+      fillRect(g, 0, 0, CONFIG.WIDTH, CONFIG.HEIGHT, '#120d1c');
+
+      // Back wall and huge window.
+      fillRect(g, 10, 24, 300, 126, '#2f2342');
+      fillRect(g, 18, 32, 284, 102, PAL.ink);
+      fillRect(g, 20, 34, 280, 98, '#111c30');
+      for (let x = 56; x < 300; x += 46) fillRect(g, x, 34, 2, 98, '#2f4560');
+      fillRect(g, 20, 82, 280, 2, '#2a3e5a');
+      for (let i = 0; i < 90; i++) {
+        const x = 22 + ((i * 17) % 274);
+        const y = 36 + ((i * 23) % 94);
+        if (y > 72) fillRect(g, x, y, 2, 2, (i % 3 === 0) ? '#ebcf7a' : '#6f89ab');
+      }
+
+      // Floor and chair area.
+      for (let y = 150; y < 232; y += 10) {
+        fillRect(g, 0, y, CONFIG.WIDTH, 10, (Math.floor(y / 10) % 2 === 0) ? '#33223f' : '#2a1b35');
+      }
+      fillRect(g, 186, 170, 56, 42, PAL.ink);
+      fillRect(g, 188, 172, 52, 38, '#5a3348');
+      fillRect(g, 204, 162, 20, 14, '#69405a');
+      fillRect(g, 210, 210, 5, 10, '#221626');
+      fillRect(g, 224, 210, 5, 10, '#221626');
+      fillRect(g, 186, 212, 56, 3, '#201227');
+
+      return canvas;
+    }
+
     const ROBBERY_COINS = Array.from({ length: 22 }, (_, i) => ({
       vx: -110 + ((i * 37) % 128), // mostly spills back toward the goons, away from the dead-end wall
       vy: 70 + ((i * 53) % 80),
@@ -2628,6 +2717,73 @@
 
       if (t < 0.8) fillRect(ctx, 0, 0, CONFIG.WIDTH, CONFIG.HEIGHT, `rgba(5, 3, 7, ${(1 - t / 0.8).toFixed(3)})`);
       if (t >= R.fade) fillRect(ctx, 0, 0, CONFIG.WIDTH, CONFIG.HEIGHT, `rgba(5, 3, 7, ${clamp((t - R.fade) / (R.title - R.fade), 0, 1).toFixed(3)})`);
+    }
+
+    /** Train finale: arrive at the rich tower, take the top-floor seat, then roll credits. */
+    function drawEndingCutscene(cs, now) {
+      const E = ENDING;
+      const t = now - cs.startedAt;
+      const eased = (k) => 1 - (1 - k) * (1 - k);
+
+      if (t >= E.title) {
+        fillRect(ctx, 0, 0, CONFIG.WIDTH, CONFIG.HEIGHT, '#05070f');
+        drawShadowText(ctx, 'YOU MADE IT', 160, 78, PAL.gold, 3, 'center');
+        drawPixelText(ctx, 'TOP FLOOR. BEST VIEW IN THE CITY.', 160, 114, PAL.cream, 1, 'center');
+        drawPixelText(ctx, 'THANKS FOR PLAYING LUCKY PIXEL LOUNGE.', 160, 126, '#9ab1d1', 1, 'center');
+        if (t >= E.prompt && Math.floor(t * 2) % 2 === 0) {
+          fillRect(ctx, 96, 156, 128, 20, PAL.ink);
+          fillRect(ctx, 97, 157, 126, 18, PAL.goldDark);
+          fillRect(ctx, 98, 158, 124, 16, '#181225');
+          drawPixelText(ctx, 'PRESS E TO RESTART', 160, 164, PAL.gold, 1, 'center');
+        }
+        return;
+      }
+
+      if (t < E.topFloorStart) {
+        ctx.drawImage(endingStreetBackground, 0, 0);
+        const walkK = clamp((t - E.walkStart) / (E.walkEnd - E.walkStart), 0, 1);
+        const px = Math.round(20 + 205 * eased(walkK));
+        const py = 146;
+        if (t < E.enter) {
+          drawCutscenePlayer(px, py, t >= E.walkStart && t < E.walkEnd, t);
+        }
+        if (t >= E.enter) {
+          const fade = clamp((t - E.enter) / (E.elevatorStart - E.enter), 0, 1);
+          fillRect(ctx, 0, 0, CONFIG.WIDTH, CONFIG.HEIGHT, `rgba(5, 6, 12, ${fade.toFixed(3)})`);
+        }
+        if (t >= E.elevatorStart) {
+          fillRect(ctx, 0, 0, CONFIG.WIDTH, CONFIG.HEIGHT, '#06070d');
+          drawPixelText(ctx, 'ELEVATOR', 160, 104, '#8a97ad', 1, 'center');
+          if (Math.floor(t * 3) % 2 === 0) drawPixelText(ctx, 'TOP FLOOR', 160, 118, PAL.gold, 1, 'center');
+        }
+        return;
+      }
+
+      ctx.drawImage(endingPenthouseBackground, 0, 0);
+
+      // Subtle window twinkle.
+      for (let i = 0; i < 8; i++) {
+        const tw = (t * 2.2 + i * 0.7) % 1;
+        const x = 34 + i * 33 + Math.floor((i % 2) * 9);
+        const y = 62 + (i % 3) * 16;
+        fillRect(ctx, x, y, 2, 2, tw > 0.5 ? '#f5d981' : '#7b95ba');
+      }
+
+      const walkTopK = clamp((t - E.topFloorStart) / (E.seatStart - E.topFloorStart), 0, 1);
+      const px = Math.round(30 + 184 * eased(walkTopK));
+      const py = 176;
+      const sitting = t >= E.seatStart;
+      if (!sitting) {
+        drawCutscenePlayer(px, py, t < E.seatStart, t);
+      } else {
+        // Seated silhouette in front of the city view.
+        fillRect(ctx, 206, 183, 6, 9, PAL.ink);
+        fillRect(ctx, 204, 188, 12, 3, '#1f1627');
+        fillRect(ctx, 211, 190, 9, 3, '#1f1627');
+      }
+
+      const fadeIn = clamp((t - E.topFloorStart) / 0.7, 0, 1);
+      if (fadeIn < 1) fillRect(ctx, 0, 0, CONFIG.WIDTH, CONFIG.HEIGHT, `rgba(5, 6, 12, ${(1 - fadeIn).toFixed(3)})`);
     }
 
     /** Unsold shelf curios, then the glowing white eyes inside the dealer's hood. */
@@ -3929,13 +4085,10 @@
     }
 
     function render(state, time) {
-      if (state.mode === MODE.INTRO && state.intro) {
-        drawIntroCutscene(state.intro, performance.now() / 1000);
-        return;
-      }
       if (state.mode === MODE.CUTSCENE && state.cutscene) {
         // Cutscene timings are stamped with performance.now(), so draw on that clock.
-        drawRobberyCutscene(state.cutscene, performance.now() / 1000);
+        if (state.cutscene.kind === 'ending') drawEndingCutscene(state.cutscene, performance.now() / 1000);
+        else drawRobberyCutscene(state.cutscene, performance.now() / 1000);
         return;
       }
       if (state.areaType === 'town') {
@@ -5545,7 +5698,7 @@
       backroomAnnounced: false,
       nearShark: false,
       sharkDebt: 0,
-      cutscene: null, // { startedAt, fired } while the robbery plays
+      cutscene: null, // { kind, startedAt, fired } while a cutscene plays
       promptVisible: false,
       promptText: '',
       areaType: 'casino',
@@ -6236,7 +6389,7 @@
       else if (state.mode === MODE.SHARK) sharkUI.close();
       else activeCasinoGame()?.ui.close();
       state.mode = MODE.CUTSCENE;
-      state.cutscene = { startedAt: performance.now() / 1000, fired: new Set() };
+      state.cutscene = { kind: 'robbery', startedAt: performance.now() / 1000, fired: new Set() };
       player.moving = false;
       Input.clear();
       arrivalMessageUntil = 0;
@@ -6244,8 +6397,34 @@
       sound.music.setTheme('butcherLow');
     }
 
+    function cutsceneRestartPromptAt(cutscene) {
+      return cutscene?.kind === 'ending' ? ENDING.prompt : ROBBERY.prompt;
+    }
+
     function updateCutscene() {
       const cs = state.cutscene;
+      if (!cs) return;
+
+      if (cs.kind === 'ending') {
+        const E = ENDING;
+        const t = performance.now() / 1000 - cs.startedAt;
+        const once = (key, at, fn) => {
+          if (t >= at && !cs.fired.has(key)) {
+            cs.fired.add(key);
+            fn();
+          }
+        };
+        if ((t > E.walkStart && t < E.walkEnd) || (t > E.topFloorStart && t < E.seatStart)) {
+          const step = Math.floor(t * 4);
+          once(`e${step}`, 0, () => sound.footstep(step % 2 ? 'left' : 'right'));
+        }
+        once('door', E.enter, () => sound.sfx.play('doorCreak'));
+        once('elevator', E.elevatorStart, () => sound.sfx.play('uiOpen'));
+        once('sit', E.seatStart, () => sound.sfx.play('chips'));
+        once('title', E.title, () => sound.sfx.play('win'));
+        return;
+      }
+
       const R = ROBBERY;
       const t = performance.now() / 1000 - cs.startedAt;
       const once = (key, at, fn) => {
@@ -6465,6 +6644,13 @@
     }
 
     function handleCanvasPointer(event) {
+      if (state.mode === MODE.CUTSCENE && state.cutscene) {
+        const t = performance.now() / 1000 - state.cutscene.startedAt;
+        if (t >= cutsceneRestartPromptAt(state.cutscene)) {
+          restartGame();
+          return;
+        }
+      }
       if (state.mode !== MODE.SLOTS || sound.isSettingsOpen()) return;
       const rect = dom.canvas.getBoundingClientRect();
       const x = ((event.clientX - rect.left) * CONFIG.WIDTH) / rect.width;
@@ -6612,14 +6798,14 @@
       const stations = [{ ...TOWN_WORLD.stationRight, key: 'right' }];
       const nextTown = state.townIndex + 1;
       const canTravelForward = nextTown <= state.maxUnlockedTown || (state.townIndex === state.maxUnlockedTown && state.maxUnlockedTown < MAX_TOWNS);
-      if (canTravelForward) stations.push({ ...TOWN_WORLD.stationLeft, key: 'left' });
+      if (canTravelForward || state.townIndex === MAX_TOWNS) stations.push({ ...TOWN_WORLD.stationLeft, key: 'left' });
       return stations;
     }
 
     function destinationTownForStation(stationKey) {
       if (stationKey === 'left') {
         const nextTown = state.townIndex + 1;
-        if (nextTown > MAX_TOWNS) return null;
+        if (nextTown > MAX_TOWNS) return state.townIndex === MAX_TOWNS ? 'ending' : null;
         const canTravelForward = nextTown <= state.maxUnlockedTown || (state.townIndex === state.maxUnlockedTown && state.maxUnlockedTown < MAX_TOWNS);
         return canTravelForward ? nextTown : null;
       }
@@ -6665,7 +6851,12 @@
     }
 
     function trainFareFor(destinationTown) {
+      if (!Number.isFinite(destinationTown)) return 0;
       return destinationTown > state.maxUnlockedTown ? TRAIN_FARES[destinationTown] : 0;
+    }
+
+    function destinationLabel(destinationTown) {
+      return destinationTown === 'ending' ? 'the Capital' : `Town ${destinationTown}`;
     }
 
     function beginTrainRide() {
@@ -6733,6 +6924,10 @@
       if (train.phase === 'tunnel') {
         train.fade = clamp(train.timer / 0.4, 0, 1);
         if (train.timer >= 0.6) {
+          if (train.destinationTown === 'ending') {
+            startEndingCutscene();
+            return;
+          }
           // Emerge from the opposite wall of the next town, still heading the same way.
           state.townIndex = clamp(train.destinationTown, 1, MAX_TOWNS);
           state.maxUnlockedTown = Math.max(state.maxUnlockedTown, state.townIndex);
@@ -6777,6 +6972,22 @@
         player.y = TOWN_WORLD.trackY + (150 - TOWN_WORLD.trackY) * t - Math.sin(t * Math.PI) * 6;
         if (train.timer >= 0.9) arriveTrain();
       }
+    }
+
+    function startEndingCutscene() {
+      const train = state.train;
+      train.active = false;
+      train.vx = 0;
+      train.fade = 0;
+      train.phase = 'idle';
+      state.mode = MODE.CUTSCENE;
+      state.cutscene = { kind: 'ending', startedAt: performance.now() / 1000, fired: new Set() };
+      Input.clear();
+      player.moving = false;
+      setPrompt(false);
+      arrivalMessageUntil = 0;
+      sound.music.setTheme('townNeon');
+      sound.sfx.play('trainTunnel');
     }
 
     function arriveTrain() {
@@ -6870,7 +7081,7 @@
         if (SCROLL_KEYS.has(event.code)) event.preventDefault();
         const t = performance.now() / 1000 - state.cutscene.startedAt;
         const restartKey = event.code === 'KeyE' || event.code === 'Space' || event.code === 'Enter';
-        if (restartKey && !event.repeat && t >= ROBBERY.prompt) restartGame();
+        if (restartKey && !event.repeat && t >= cutsceneRestartPromptAt(state.cutscene)) restartGame();
         return;
       }
 
@@ -6980,7 +7191,7 @@
           setPrompt(true, closedLineMessage(nearestStation()?.key));
         } else {
           const fare = trainFareFor(destination);
-          setPrompt(true, `Press <kbd>E</kbd> to ride to Town ${destination} (${fare > 0 ? fare : 'free'})`);
+          setPrompt(true, `Press <kbd>E</kbd> to ride to ${destinationLabel(destination)} (${fare > 0 ? fare : 'free'})`);
         }
       } else {
         setPrompt(false);
